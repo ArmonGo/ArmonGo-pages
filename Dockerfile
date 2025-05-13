@@ -1,6 +1,6 @@
 FROM ruby:3.1-slim
 
-# Install Python + image-resize dependencies
+# Install Python + image libs
 RUN apt-get update && \
     apt-get install -y \
       python3 \
@@ -15,12 +15,14 @@ RUN apt-get update && \
 
 WORKDIR /srv/jekyll
 
-# Install Ruby gems (jekyll + any plugins)
-COPY Gemfile Gemfile.lock ./
+# Only copy the Gemfile (lock is optional)
+COPY Gemfile ./
+
+# Install Jekyll & any listed plugins
 RUN bundle install
 
-# Copy the rest of your site + build script
+# Now copy everything else (including your build.py)
 COPY . .
 
-# Build: compiles SCSS, thumbnails, then runs Jekyll
+# When container runs, build the site
 CMD ["python3", "build.py"]
