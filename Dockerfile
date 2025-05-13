@@ -1,20 +1,27 @@
 FROM ruby:3.1-slim
 
-# Install system deps + Node.js & npm
+# Install system deps: Python, pip, image libs, build tools
 RUN apt-get update && \
-    apt-get install -y build-essential nodejs npm && \
+    apt-get install -y \
+      python3 \
+      python3-pip \
+      python3-dev \
+      build-essential \
+      libjpeg-dev \
+      zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Latest Bundler comes preinstalled here
+# Install Jekyll v2.x
 RUN gem install jekyll -v "~>2.5"
 
-# Install Gulp CLI
-RUN npm install -g gulp-cli
+# Install your Python build dependencies
+RUN pip3 install libsass rcssmin Pillow
 
 WORKDIR /srv/jekyll
 COPY . .
 
-RUN npm install
+# Install any Ruby gems (if you have a Gemfile)
 RUN bundle install
 
-CMD ["gulp", "build"]
+# Default command runs your build script
+CMD ["python3", "build.py"]
