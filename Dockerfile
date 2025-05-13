@@ -1,7 +1,6 @@
-# Use Ruby 2.7 (compatible with Jekyll 2.x’s use of URI.escape)
 FROM ruby:2.7-slim
 
-# 1. Install Python + image-resize & CSS deps
+# Install Python + image-resize & CSS deps
 RUN apt-get update && \
     apt-get install -y \
       python3 \
@@ -13,19 +12,20 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# 2. Install Bundler (last 2.x supporting Ruby 2.7) and Jekyll 2.x
-RUN gem install bundler -v 2.4.22 \
- && gem install jekyll -v "~>2.5"
-
 WORKDIR /srv/jekyll
 
-# 3. If you have a Gemfile with plugins, copy & bundle; otherwise skip
+# Update RubyGems, install ffi, then Bundler and Jekyll
+RUN gem update --system 3.3.22 \
+ && gem install ffi -v 1.17.2 \
+ && gem install bundler -v 2.4.22 \
+ && gem install jekyll -v "~>2.5"
+
+# Install any plugins via Gemfile (if present)
 COPY Gemfile ./
 RUN bundle install || echo "No Gemfile detected, skipping bundle install"
 
-# 4. Copy the rest of your site (including build.py)
+# Copy the rest of your site + build script
 COPY . .
 
-# 5. On container start: run the Python build script
-#    which compiles your Sass, generates thumbnails, then invokes Jekyll
+# Entry point: runs your Python build script (SCSS, thumbnails, then Jekyll)
 CMD ["python3", "build.py"]
