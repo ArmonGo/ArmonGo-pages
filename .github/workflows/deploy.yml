@@ -21,12 +21,11 @@ jobs:
             --tag mickey:latest \
             .
 
-      - name: Run Gulp build inside container
+      - name: Run Python build
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/srv/jekyll" \
-            mickey:latest \
-            gulp build
+            mickey:latest
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
