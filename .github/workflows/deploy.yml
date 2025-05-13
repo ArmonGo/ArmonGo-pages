@@ -1,5 +1,10 @@
-name: Build & Deploy Jekyll site
+# At the very top of your workflow file:
+permissions:
+  contents: write          # allow git push of files
+  pages: write             # allow Pages deployment
+  id-token: write          # only needed if you use OIDC
 
+name: Build & Deploy Jekyll site
 on:
   push:
     branches: [ main ]
@@ -11,17 +16,14 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx (for multi-platform caching, optional)
-        uses: docker/setup-buildx-action@v3
+        with:
+          fetch-depth: 0           # ensure full history for Actions GH Pages
+          persist-credentials: true  # preserves GITHUB_TOKEN for the push
 
       - name: Build Docker image
-        run: |
-          docker build \
-            --tag mickey:latest \
-            .
+        run: docker build -t mickey:latest .
 
-      - name: Run Python build
+      - name: Run build inside container
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/srv/jekyll" \
