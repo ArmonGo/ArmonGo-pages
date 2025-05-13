@@ -1,10 +1,9 @@
-FROM ruby:3.1-slim
+FROM ruby:2.7-slim
 
-# Install Python + image libs
+# 1. System deps for Python & image resizing
 RUN apt-get update && \
     apt-get install -y \
       python3 \
-      python3-dev \
       python3-libsass \
       python3-rcssmin \
       python3-pil \
@@ -13,16 +12,20 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# 2. Install Bundler (pinned) and Jekyll 2.x
+RUN gem install bundler -v 2.4.22 \
+ && gem install jekyll -v "~>2.5"
+
 WORKDIR /srv/jekyll
 
-# Only copy the Gemfile (lock is optional)
+# 3. Install any plugins via Bundler
 COPY Gemfile ./
-
-# Install Jekyll & any listed plugins
 RUN bundle install
 
-# Now copy everything else (including your build.py)
+# 4. Bring in your site + build script
 COPY . .
 
-# When container runs, build the site
+# 5. Build on container start:
+#    - compile SCSS & thumbnails (build.py)
+#    - run `jekyll build`
 CMD ["python3", "build.py"]
