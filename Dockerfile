@@ -1,5 +1,6 @@
 FROM ruby:3.1-slim
 
+# Install Python + image-resize dependencies
 RUN apt-get update && \
     apt-get install -y \
       python3 \
@@ -12,11 +13,14 @@ RUN apt-get update && \
       zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN gem install jekyll -v "~>2.5"
-
 WORKDIR /srv/jekyll
-COPY . .
 
+# Install Ruby gems (jekyll + any plugins)
+COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
+# Copy the rest of your site + build script
+COPY . .
+
+# Build: compiles SCSS, thumbnails, then runs Jekyll
 CMD ["python3", "build.py"]
