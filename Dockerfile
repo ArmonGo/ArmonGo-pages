@@ -1,22 +1,22 @@
-# Jekyll 2.x is happiest on Ruby ≤2.5
-FROM ruby:2.3
+# Dockerfile
+FROM ruby:2.7-slim
 
-# Install system dependencies for Jekyll & Gulp
+# Install system deps + Node.js & npm
 RUN apt-get update && \
-    apt-get install -y build-essential nodejs npm
+    apt-get install -y build-essential nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install Jekyll (v2.x) and Bundler
+# Install Jekyll 2.x and Bundler
 RUN gem install jekyll -v "~>2.5" bundler
 
-# Install Gulp CLI globally
+# Install Gulp CLI
 RUN npm install -g gulp-cli
 
 WORKDIR /srv/jekyll
 COPY . .
 
-# Install npm deps (for Gulp/theme) and Ruby gems (for Jekyll)
+# Install theme deps
 RUN npm install
 RUN bundle install
 
-# Default command when container is run
 CMD ["gulp", "build"]
